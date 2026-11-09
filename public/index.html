@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CreatorTip AI — Tip madz</title>
+<meta name="description" content="CreatorTip AI: tip your favourite creator with PayPal Checkout and an AI-composed personal message.">
+<link rel="stylesheet" href="style.css">
+<script src="config.js"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="wrap header-inner">
+    <div class="brand">
+      <span class="brand-mark">CT</span>
+      <span class="brand-name">CreatorTip <span class="brand-ai">AI</span></span>
+    </div>
+    <span id="mode-badge" class="mode-badge">Demo Mode</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- 1. Creator tip page -->
+  <section class="card creator-card" id="tip-page">
+    <div id="creator-avatar" class="avatar">M</div>
+    <div class="creator-meta">
+      <h1 id="creator-name">madz</h1>
+      <p id="creator-handle" class="handle">@madz</p>
+      <p id="creator-bio" class="bio"></p>
+    </div>
+  </section>
+
+  <!-- Amount -->
+  <section class="card" id="amount-panel">
+    <h2>1. Pick a tip amount</h2>
+    <div class="preset-row">
+      <button type="button" class="preset-btn" data-amount="1">$1</button>
+      <button type="button" class="preset-btn active" data-amount="5">$5</button>
+      <button type="button" class="preset-btn" data-amount="10">$10</button>
+      <button type="button" class="preset-btn" data-amount="25">$25</button>
+      <label class="custom-amount">
+        <span>$</span>
+        <input id="custom-amount" type="number" min="0" step="0.01" placeholder="Custom" inputmode="decimal">
+      </label>
+    </div>
+    <p id="amount-summary" class="summary"></p>
+    <p id="amount-error" class="error" role="alert"></p>
+  </section>
+
+  <!-- 2. AI message composer -->
+  <section class="card" id="composer-panel">
+    <h2>2. Compose your message <span class="ai-tag">AI composer</span></h2>
+    <p class="hint">Blank cards are awkward. Tell the composer who you are and what you love, pick a tone, and it drafts a personal tip message for you. (Runs 100% in your browser — see “For judges” below.)</p>
+    <div class="grid-2">
+      <label>Your name
+        <input id="fan-name" type="text" placeholder="e.g. Alex" autocomplete="off">
+      </label>
+      <label>Something you love about this creator
+        <input id="fan-detail" type="text" placeholder="e.g. your late-night coding streams" autocomplete="off">
+      </label>
+    </div>
+    <fieldset class="tones">
+      <legend>Tone</legend>
+      <label><input type="radio" name="tone" value="supportive" checked> Supportive</label>
+      <label><input type="radio" name="tone" value="funny"> Funny</label>
+      <label><input type="radio" name="tone" value="hype"> Hype</label>
+      <label><input type="radio" name="tone" value="grateful"> Grateful</label>
+    </fieldset>
+    <button type="button" id="generate-btn" class="primary-btn">Generate message</button>
+    <label class="message-label">Your tip message (attached to the payment)
+      <textarea id="tip-message" rows="4" placeholder="Your generated message will appear here — or write your own."></textarea>
+    </label>
+    <p id="composer-note" class="hint"></p>
+  </section>
+
+  <!-- 3. PayPal checkout -->
+  <section class="card" id="checkout-panel">
+    <h2>3. Pay with PayPal</h2>
+    <div id="mode-banner" class="mode-banner"></div>
+    <div id="paypal-buttons"></div>
+    <div id="demo-area" class="hidden">
+      <button type="button" id="demo-pay-btn" class="paypal-demo-btn">Pay with PayPal (Demo)</button>
+      <p class="hint">Simulates order creation, buyer approval and capture locally — same UI states as the real flow.</p>
+    </div>
+    <p id="checkout-error" class="error" role="alert"></p>
+    <ol id="checkout-log" class="checkout-log"></ol>
+  </section>
+
+  <!-- 4. Success + AI thank-you generator -->
+  <section class="card success hidden" id="success-panel">
+    <h2>Tip sent — thank you!</h2>
+    <dl class="success-facts">
+      <div><dt>Order ID</dt><dd id="success-order-id">—</dd></div>
+      <div><dt>Amount</dt><dd id="success-amount">—</dd></div>
+      <div><dt>From</dt><dd id="success-payer">—</dd></div>
+    </dl>
+    <p class="delivered">Your message was <strong>delivered</strong> to the creator with the tip:</p>
+    <blockquote id="success-message" class="delivered-message"></blockquote>
+    <p id="success-demo-note" class="hint"></p>
+    <hr>
+    <h3>For the creator: AI thank-you reply</h3>
+    <p class="hint">Creators: turn this tip into a warm public thank-you post in one click.</p>
+    <button type="button" id="ty-generate-btn" class="primary-btn">Generate thank-you post</button>
+    <textarea id="ty-output" rows="4" placeholder="Your thank-you post draft will appear here."></textarea>
+    <button type="button" id="ty-copy-btn" class="ghost-btn">Copy draft</button>
+  </section>
+
+  <!-- 5. How it works / for judges -->
+  <section class="card" id="how-it-works">
+    <h2>How it works — notes for judges</h2>
+    <ol class="how-list">
+      <li><strong>Pick an amount</strong> ($1 / $5 / $10 / $25 or custom). Amounts are validated (zero, negative and non-numeric values are rejected) before any payment starts.</li>
+      <li><strong>Compose with AI.</strong> The “AI Tip Message Composer” drafts a personal message from a tone + your name + a detail about the creator. It is a client-side smart composer (template + variation engine, 500 message combinations per tone, no repeats) so the demo needs zero API keys. A real LLM can be dropped into the single function <code>aiGenerateMessage()</code> in <code>public/app.js</code> without touching anything else.</li>
+      <li><strong>Pay with PayPal.</strong> Checkout uses the official PayPal JavaScript SDK and the standard Orders flow: <code>createOrder</code> with the tip amount (the message rides along in <code>custom_id</code>) and <code>capture</code> inside <code>onApprove</code>. PayPal is the payment rail end-to-end — no cards or balances are handled by this app.</li>
+      <li><strong>Dual path, honestly labelled.</strong> With a sandbox client-id in <code>public/config.js</code> you get the real PayPal Checkout (sandbox). Without one, the app runs a <em>Demo Mode</em> that simulates the same created &rarr; approved &rarr; captured states with demo order IDs, so the full journey is testable with no credentials at all.</li>
+      <li><strong>Close the loop.</strong> After capture, the success screen shows the order ID and the delivered message, and the creator gets an “AI Thank-You Reply” draft — because a tip that gets acknowledged publicly brings the next tip.</li>
+    </ol>
+    <p class="hint">Run it: <code>npm start</code>, then open <code>http://localhost:4174</code>. Run the automated checks: <code>npm run verify</code>.</p>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <p>CreatorTip AI — built for the PayPal AI Hackathon. Demo project: PayPal runs in sandbox/demo mode; no real money moves.</p>
+  </div>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
