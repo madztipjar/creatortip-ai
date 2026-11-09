@@ -1,0 +1,1 @@
+{"description":"CreatorTip AI — creator tipping with PayPal Checkout and an AI tip-message composer. PayPal AI Hackathon entry.","license":"MIT","name":"creatortip-ai","private":true,"scripts":{"start":"node server.mjs","verify":"node verify.mjs"},"version":"1.0.0"}
